@@ -37,6 +37,7 @@ immigration_count.show()
 immigration_table = spark.sql('''
     select *
     from immigration_data_table
+    limit 100
 ''')
 immigration_table.show()
 

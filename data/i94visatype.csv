@@ -1,0 +1,10 @@
+visa_type_id,visa_type
+B1,Business
+B2,Tourism
+WB,Business Waiver
+WT,Tourism Waiver
+F1,Students
+F2,Dependents of F1 Visa Holders
+M1,Vocational
+E1,Treaty Trader
+E2,Treaty Investor
