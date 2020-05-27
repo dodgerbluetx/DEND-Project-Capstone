@@ -7,7 +7,7 @@ from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear, dat
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, IntegerType, TimestampType, LongType, DecimalType
 
 config = configparser.ConfigParser()
-config.read_file(open('/home/hadoop/dl.cfg'))
+config.read_file(open('/home/hadoop/project/dl.cfg'))
 
 os.environ["AWS_ACCESS_KEY_ID"]= config['AWS']['AWS_ACCESS_KEY_ID']
 os.environ["AWS_SECRET_ACCESS_KEY"]= config['AWS']['AWS_SECRET_ACCESS_KEY']
@@ -41,4 +41,5 @@ immigration_table = spark.sql('''
 ''')
 immigration_table.show()
 
-immigration_table.write.mode("overwrite").partitionBy("i94port").parquet("s3a://ma2516-immigration-table/data")
+#immigration_table.write.mode("overwrite").partitionBy("i94port").parquet("s3a://ma2516-immigration-table/data")
+immigration_table.write.mode("overwrite").parquet("s3a://ma2516-immigration-table/data")
