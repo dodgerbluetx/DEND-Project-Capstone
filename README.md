@@ -390,7 +390,6 @@ Data Model ERD:
 | state_name | varchar   | State name                     | CALIFORNIA |
 
 
-
 `visa_categories`
 
 | Field Name    | Data Type | Description               | Example  |
@@ -399,14 +398,12 @@ Data Model ERD:
 | visa_category | varchar   | Visa category name        | Business |
 
 
-
 `visa_types`
 
 | Field Name   | Data Type | Description                       | Example  |
 | ------------ | --------- | --------------------------------- | -------- |
 | visa_type_id | varchar   | Alphanumeric visa type identifier | B1       |
 | visa_type    | varchar   | Visa type name                    | Business |
-
 
 
 `airlines`
@@ -439,128 +436,34 @@ Data Model ERD:
 | count              | int       | Summary count            | 13000       |
 
 
-
 ## Project Completion Write Up
 
-* What's the goal? What queries will you want to run? How would Spark or
-    Airflow be incorporated? Why did you choose the model you chose?
-* Clearly state the rationale for the choice of tools and technologies for the
-    project.
-* Document the steps of the process.
-* Propose how often the data should be updated and why.
-* Post your write-up and final data model in a GitHub repo.
-* Include a description of how you would approach the problem differently under
-    the following scenarios:
-    * If the data was increased by 100x.
-    * If the pipelines were run on a daily basis by 7am.
-    * If the database needed to be accessed by 100+ people.
 
+The goal of this project was to demonstrate taking raw datasets, transforming
+them by preparing and cleaning the data, and placing the data in a location that
+can be access by others for various uses.  The key being using tools and various
+processes/modeling techniques learned throughout the Data Engineering course.
 
+Example queries for this data might be to aggregate the demographic data along 
+with the immigration data to look for trends/correlations between them.
+Airport data can also be joined to look for insights into more common ports of
+entry for immigrants from different parts of the world.  The full i94 data set
+for 2016 can be imported to look for peaks and valleys for immigration, and 
+whether those high/low points map to any particular areas of the country.
 
+I chose the model I implemented due to the elegance and simplicity
+it offers. Spark integration was crucial to manage efficiently moving the data
+between locations.
 
+In a production scenario, the i94 data can be imported on a daily basis or as
+it is made available. If I were to take this project to the next step, I would 
+consider using Airflow for task orchestration.  Unfortunately, the workspaces 
+provided do not offer easily integrating Spark and Airflow in the same ETL 
+process.
 
-
-
-
-
-
-
-
-
-
-
-
-## Introduction
-
-A music streaming startup, Sparkify, has grown their user base and song
-database and want to move their processes and data onto the cloud. Their data
-resides in S3, in a directory of JSON logs on user activity on the app, as well
-as a directory with JSON metadata on the songs in their app.
-
-As their data engineer, you are tasked with building an ETL pipeline that
-extracts their data from S3, stages them in Redshift, and transforms data into
-a set of dimensional tables for their analytics team to continue finding
-insights in what songs their users are listening to. You'll be able to test
-your database and ETL pipeline by running queries given to you by the analytics
-team from Sparkify and compare your results with their expected results.
-
-## Project Description
-
-In this project, you'll apply what you've learned on data warehouses and AWS to
-build an ETL pipeline for a database hosted on Redshift. To complete the
-project, you will need to load data from S3 to staging tables on Redshift and
-execute SQL statements that create the analytics tables from these staging
-tables.
-
-## Requirements
-
-To run locally, an AWS account must be available and a user/key.  The AWS
-details will be populated in dwh.cfg and are used to create a redshift cluster
-and load the appropriate data.
-
-Create a dwh.cfg file in the same directory as the scripts, and populate with
-the following information:
-
-~~~~
-[CLUSTER]
-HOST = <cluster host name, populate after creating cluster>
-DB_NAME = dwh
-DB_USER = <user name to use for db>
-DB_PASSWORD = <pwd to use for db>
-DB_PORT = 5439
-
-[IAM_ROLE]
-ARN = <iam role name, populate after creating cluster>
-
-[S3]
-LOG_DATA='s3://udacity-dend/log_data'
-LOG_JSONPATH='s3://udacity-dend/log_json_path.json'
-SONG_DATA='s3://udacity-dend/song_data'
-
-[AWS]
-KEY = <key created in aws management console>
-SECRET = <secret created in aws management console>
-
-[DWH]
-CLUSTER_TYPE = multi-node
-NUM_NODES = 2
-NODE_TYPE = dc2.large
-CLUSTER_IDENTIFIER = dwhCluster
-DB = dwh
-DB_USER = <user name to use for db, same as above>
-DB_PASSWORD = <pwd to use for db, same as above>
-PORT = 5439
-IAM_ROLE_NAME = dwhRole
-~~~~
-
-## Usage
-
-Execute the following scripts in this order to fully retrieve and load data.
-
-1. `manage_aws.py --mode create_cluster` - This script will build an AWS
-    Redshift cluster using the details provided in dwh.cfg. There are some
-    parameters returned to the terminal that will need to be populated into
-    the dwh.cfg file once the cluster is fully built.
-
-2. `create_tables.py` - This script will drop all tables is already existing,
-    and then create the following tables using queries found in the sql_queries.py
-    script.
-
-    * `staging_events` - staging table for event data
-    * `staging_songs` - staging table for song data
-    * `songplays` - facts table for data on song play events
-    * `users` - dimension table containing information about users using the
-       music play app
-    * `songs` - dimension table containing information about the songs in the db
-    * `artists` - dimension table containing information about the artists gs in
-       the db
-    * `time` - dimension table containing information about the times songs were
-       in the db
-
-3. `etl.py` - This script will copy the data from the S3 bucket provided,
-    stage the raw data in in staging tables created in step 2, and then insert
-    specific data in the facts and dimensions tables also created in step 2.
-
-4. `manage_aws.py --mode delete_cluster` - This script will tear down the
-    redshift cluster when complete, all data will be lost.  Be sure to run this
-    when complete to ensure large charges are not accrued in AWS.
+If the data were to be increased by 100x, I would increase the amount of worker
+nodes in the Spark EMR cluster for faster processing. Additionally I would 
+increase the size of the Redshift cluster for faster data loading and querying.
+That would also be a requirement for an environment where 100+ people are 
+accessing the data.  However, I believe the current implementation I have built
+can be scaled with the addition of more compute resources.
