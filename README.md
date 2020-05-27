@@ -272,7 +272,7 @@ information.
         DB_PORT = 5439
 
         [IAM_ROLE]
-        ARN = arn:aws:iam::604714130276:role/dwhRole
+        ARN = <iam role>
 
         [S3]
         INPUT_DATA = s3://ma2516-immigration-table/data
