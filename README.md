@@ -85,9 +85,10 @@ There are twelve columns in this CSV; city, state, median_age, male_population,
 female_population, total_population, number_of_veterans, foreign_born,
 average_household_size, state_code, race, count.
 
-* Airline IATA code data was sourced from [Wikipedia](https://en.wikipedia.org/wiki/List_of_airline_codes).  The data was cleaned to remove all special characters
-and to align the data columns.  Additionally, all rows that did not contain
-a valid IATA code were removed.
+* Airline IATA code data was sourced from
+[Wikipedia](https://en.wikipedia.org/wiki/List_of_airline_codes).  The data was
+cleaned to remove all special characters and to align the data columns.
+Additionally, all rows that did not contain a valid IATA code were removed.
 
 
 ## Data Model Definition
@@ -113,21 +114,24 @@ Redshift clusters are required and an AWS account.
 
 Included scripts:
 
-  `manage_aws` - Used to automate the building and deletion of a
-    Redshift cluster.
+`manage_aws` --mode create_cluster - Used to automate the building of an
+AWS Redshift Cluster.
 
-  `analyze_data.py` - Used to do some cursory analysis of the raw i94 data,
-    not required for use for the ETL process.
+`manage_aws` --mode delete_cluster - Used to automate the deletion of an
+AWS Redshift Cluster.
 
-  `create_tables.py` - Used to build the required SQL table structure in the
-    Redshift cluster.
+`analyze_data.py` - Used to do some cursory analysis of the raw i94 data,
+not required for use for the ETL process.
 
-  `etl.py` - Main ETL process, retrieves, transforms and loads the data sets.
+`create_tables.py` - Used to build the required SQL table structure in the
+Redshift cluster.
 
-  `sql_queries` - Contains the queries used to create, copy, load and insert
-    data as part of the overall ETL.
+`etl.py` - Main ETL process, retrieves, transforms and loads the data sets.
 
-  `./data` - Data sets used by this process.
+`sql_queries` - Contains the queries used to create, copy, load and insert
+data as part of the overall ETL.
+
+`./data` - Data sets used by this process.
 
 
 ## Environment Preparation
@@ -322,6 +326,10 @@ information.
 
         /usr/bin/python3 etl.py
 
+23. Be sure to shut down the Redshift cluster when complete!
+
+        /usr/bin/python3 manage_aws.py --mode delete_cluster
+
 
 ## Data Dictionary
 
@@ -444,11 +452,11 @@ them by preparing and cleaning the data, and placing the data in a location that
 can be access by others for various uses.  The key being using tools and various
 processes/modeling techniques learned throughout the Data Engineering course.
 
-Example queries for this data might be to aggregate the demographic data along 
+Example queries for this data might be to aggregate the demographic data along
 with the immigration data to look for trends/correlations between them.
 Airport data can also be joined to look for insights into more common ports of
 entry for immigrants from different parts of the world.  The full i94 data set
-for 2016 can be imported to look for peaks and valleys for immigration, and 
+for 2016 can be imported to look for peaks and valleys for immigration, and
 whether those high/low points map to any particular areas of the country.
 
 I chose the model I implemented due to the elegance and simplicity
@@ -456,14 +464,14 @@ it offers. Spark integration was crucial to manage efficiently moving the data
 between locations.
 
 In a production scenario, the i94 data can be imported on a daily basis or as
-it is made available. If I were to take this project to the next step, I would 
-consider using Airflow for task orchestration.  Unfortunately, the workspaces 
-provided do not offer easily integrating Spark and Airflow in the same ETL 
+it is made available. If I were to take this project to the next step, I would
+consider using Airflow for task orchestration.  Unfortunately, the workspaces
+provided do not offer easily integrating Spark and Airflow in the same ETL
 process.
 
 If the data were to be increased by 100x, I would increase the amount of worker
-nodes in the Spark EMR cluster for faster processing. Additionally I would 
+nodes in the Spark EMR cluster for faster processing. Additionally I would
 increase the size of the Redshift cluster for faster data loading and querying.
-That would also be a requirement for an environment where 100+ people are 
+That would also be a requirement for an environment where 100+ people are
 accessing the data.  However, I believe the current implementation I have built
 can be scaled with the addition of more compute resources.
