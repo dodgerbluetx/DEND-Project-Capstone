@@ -1,6 +1,6 @@
 import configparser
 import psycopg2
-from sql_queries import staging_copy_queries, insert_table_queries
+from sql_queries import staging_copy_queries, staging_table_list, insert_table_queries, insert_table_list
 import time
 import datetime
 import os
@@ -29,6 +29,17 @@ def create_spark_session():
 
 
 def copy_sas(spark):
+    """
+    Description:
+      Copies SAS data from S3 bucket to S3 bucket in Parquet form
+
+    Parameters:
+      spark - the spark instance cursor
+
+    Returns:
+      none
+    """
+
     sas_data_in = config.get('SAS','INPUT_SAS_DATA')
     sas_data_out = config.get('SAS','OUTPUT_SAS_DATA')
     df_spark = spark.read.format('com.github.saurfang.sas.spark').option("inferSchema", "true").load(sas_data_in)
@@ -47,15 +58,15 @@ def copy_sas(spark):
 
     immigration_table = spark.sql('''
         select
-            cicid, i94yr, i94mon, i94cit, i94res, i94port, cast(arrdate as int) arrdate,
-            i94mode, i94addr, cast(depdate as int) depdate, i94bir, i94visa, count, dtadfile, visapost,
-            occup, entdepa, entdepd, entdepu, matflag, biryear, cast(dtaddto as int) dtaddto,
-            gender, insnum, airline, admnum, fltno, visatype
+            cicid, i94yr, i94mon, i94cit, i94res, i94port,
+            cast(arrdate as int) arrdate, i94mode, i94addr,
+            cast(depdate as int) depdate, i94bir, i94visa, count, dtadfile,
+            visapost, occup, entdepa, entdepd, entdepu, matflag, biryear,
+            cast(dtaddto as int) dtaddto, gender, insnum, airline, admnum,
+            fltno, visatype
         from immigration_data_table
-        limit 100000
     ''')
     immigration_table.show()
-
     immigration_table.write.mode("overwrite").parquet(sas_data_out)
 
 
@@ -79,13 +90,14 @@ def load_staging_tables(cur, conn):
         cur.execute(query)
         conn.commit()
 
+    for table in staging_table_list:
+        data_quality(table, cur, conn)
+
 
 def load_csv_tables(cur, conn):
     """
     Description:
-      Loads data from defined S3 bucket into staging tables. Use the
-      sql_queries script to loop through each query defined in the
-      copy_table_queries list.
+      Loads CSV data files from defined S3 bucket into staging tables.
 
     Parameters:
       cur - the db connection cursor
@@ -109,8 +121,9 @@ def load_csv_tables(cur, conn):
                }
 
     for key, value in csv_dict.items():
-        csv_source = csv_data + value + '.csv'
-        #print(key, value, csv_source, csv_data, iam_role)
+        table = key
+        file = value
+        csv_source = csv_data + file + '.csv'
 
         query = ("""
             copy {}
@@ -118,19 +131,16 @@ def load_csv_tables(cur, conn):
             credentials 'aws_iam_role={}'
             csv
             ignoreheader 1
-        """).format(key, csv_source, iam_role)
+        """).format(table, csv_source, iam_role)
 
-        print(f"Copying CSV data from {value} into {key} table...")
+        print(f"Copying CSV data from {file} into {table} table...")
         print()
 
         cur.execute(query)
         conn.commit()
 
-    #for query in csv_copy_queries:
-    #    print("Copying data to staging tables...")
-    #    print()
-    #    cur.execute(query)
-    #    conn.commit()
+        data_quality(table, cur, conn)
+
 
 def insert_tables(cur, conn):
     """
@@ -152,6 +162,39 @@ def insert_tables(cur, conn):
         cur.execute(query)
         conn.commit()
 
+    for table in insert_table_list:
+        data_quality(table, cur, conn)
+
+
+def data_quality(table, cur, conn):
+    """
+    Description:
+      Checks data quality by verifying there is data present in the table
+      after insert.
+
+    Parameters:
+      table - the table to check
+      cur - the db connection cursor
+      conn - the db connection object
+
+    Returns:
+      none
+    """
+
+    iam_role = config.get('IAM_ROLE', 'ARN')
+
+    print(f"Performing data quality check on {table} table...")
+
+    query = (f"select count(*) from {table}")
+    cur.execute(query)
+    conn.commit()
+    records = cur.fetchone()
+
+    if records[0] < 1:
+        print(f"Data quality check failed! {table} table returned no results!")
+    else:
+        print(f"Data quality check on {table} table passed with {records[0]} records!")
+
 
 def main():
     config = configparser.ConfigParser()
@@ -165,10 +208,7 @@ def main():
 
     load_staging_tables(cur, conn)
     load_csv_tables(cur, conn)
-    #print()
     insert_tables(cur, conn)
-    #print()
-
     conn.close()
 
 

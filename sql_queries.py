@@ -16,65 +16,6 @@ visa_types_table_drop = "drop table if exists visa_types cascade"
 airlines_table_drop = "drop table if exists airlines cascade"
 demographics_table_drop = "drop table if exists demographics cascade"
 
-"""
- |-- cicid: double (nullable = true)    drop column
- |-- i94yr: double (nullable = true)    int - all are 2016, remove nulls
- |-- i94mon: double (nullable = true)   varchar - all are from the month imported, remove nulls
- |-- i94cit: double (nullable = true)   int - country code, import description list from label desc file
- |-- i94res: double (nullable = true)   int - country code, import description list from label desc file
- |-- arrdate: double (nullable = true)  numeric - sas date field, convert to datetime
- |-- i94mode: double (nullable = true)  int - mode of arrival, build dim tbale from label desc file, very few nulls, remove nulls
- |-- i94addr: string (nullable = true)  varchar - state abbrev, import description list from label desc file, about 150K nulls, remove nulls and non matching values
- |-- depdate: double (nullable = true)  numeric - sas date field, convert to datetime, nearly 300k nulls
- |-- i94bir: double (nullable = true)   int - age field in years
- |-- i94visa: double (nullable = true)  int - visa code, build dim table from label desc file, no nulls
- |-- count: double (nullable = true)    drop column
- |-- dtadfile: string (nullable = true) drop column
- |-- visapost: string (nullable = true) varchar - dept of state where vis issued, 1.5M nulls, leave nulls
- |-- occup: string (nullable = true)    drop column, occupation, 2.5M nulls
- |-- entdepa: string (nullable = true)  varchar - can include but need info for dim table
- |-- entdepd: string (nullable = true)  varchar - can include but need info for dim table
- |-- entdepu: string (nullable = true)  drop column
- |-- matflag: string (nullable = true)  drop column
- |-- biryear: double (nullable = true)  int - birth year
- |-- dtaddto: string (nullable = true)  int - convert to date time, date admitted to us (allowed to stay till)
- |-- gender: string (nullable = true)   varchar - can include but need info for dim table
- |-- insnum: string (nullable = true)   drop column
- |-- airline: string (nullable = true)  varrchar - no way to translate, unless outside source data
- |-- admnum: double (nullable = true)   drop column
- |-- fltno: string (nullable = true)    int - flight number
- |-- visatype: string (nullable = true) varchar - no way to translate, unless outside source data
- |-- i94port: string (nullable = true)  varchar - airport code, import description list from label desc file
-
- |-- cicid: double (nullable = true)
- |-- i94yr: double (nullable = true)
- |-- i94mon: double (nullable = true)
- |-- i94cit: double (nullable = true)
- |-- i94res: double (nullable = true)
- |-- i94port: string (nullable = true)
- |-- arrdate: double (nullable = true)
- |-- i94mode: double (nullable = true)
- |-- i94addr: string (nullable = true)
- |-- depdate: double (nullable = true)
- |-- i94bir: double (nullable = true)
- |-- i94visa: double (nullable = true)
- |-- count: double (nullable = true)
- |-- dtadfile: string (nullable = true)
- |-- visapost: string (nullable = true)
- |-- occup: string (nullable = true)
- |-- entdepa: string (nullable = true)
- |-- entdepd: string (nullable = true)
- |-- entdepu: string (nullable = true)
- |-- matflag: string (nullable = true)
- |-- biryear: double (nullable = true)
- |-- dtaddto: string (nullable = true)
- |-- gender: string (nullable = true)
- |-- insnum: string (nullable = true)
- |-- airline: string (nullable = true)
- |-- admnum: double (nullable = true)
- |-- fltno: string (nullable = true)
- |-- visatype: string (nullable = true)
-"""
 
 immigration_staging_table_create = ("""
     create table if not exists immigration_staging
@@ -225,7 +166,6 @@ demographics_table_create = ("""
 """)
 
 # staging tables
-
 staging_copy = ("""
     copy immigration_staging
     from '{}'
@@ -234,59 +174,6 @@ staging_copy = ("""
 """).format(config.get('S3','INPUT_DATA'),
             config.get('IAM_ROLE', 'ARN'))
 
-"""
-        id int identity(0,1),
-        i94yr int,
-        i94mon int,
-        i94cit_id int references countries(country_id),
-        i94res_id int references countries(country_id),
-        i94port_id varchar references ports(port_id),
-        arrdate date,
-        i94mode_id int references modes(mode_id),
-        i94addr_id varchar references states(state_id),
-        depdate date,
-        i94bir int,
-        i94visa_id int references visa_categories(visa_id),
-        visapost varchar,
-        entdepa varchar,
-        entdepd varchar,
-        biryear int,
-        dtaddto date,
-        gender varchar,
-        airline_id varchar,
-        fltno int,
-        visatype_id varchar references visa_types(visa_type_id),
-        constraint immigration_pkey primary key (id)
-
-                cicid float,
-                i94yr float,
-                i94mon float,
-                i94cit float,
-                i94res float,
-                i94port varchar,
-                arrdate float,
-                i94mode float,
-                i94addr varchar,
-                depdate float,
-                i94bir float,
-                i94visa float,
-                count float,
-                dtadfile varchar,
-                visapost varchar,
-                occup varchar,
-                entdepa varchar,
-                entdepd varchar,
-                entdepu varchar,
-                matflag varchar,
-                biryear float,
-                dtaddto varchar,
-                gender varchar,
-                insnum varchar,
-                airline varchar,
-                admnum float,
-                fltno varchar,
-                visatype varchar
-"""
 
 # insert queries
 immigration_table_insert = ("""
@@ -311,7 +198,6 @@ immigration_table_insert = ("""
 
 
 # run queries
-
 drop_table_queries = [immigration_staging_table_drop,
                       immigration_table_drop,
                       ports_table_drop,
@@ -337,12 +223,7 @@ create_table_queries = [ports_table_create,
                        ]
 
 staging_copy_queries = [staging_copy]
-
-
+staging_table_list = ['immigration_staging']
 
 insert_table_queries = [immigration_table_insert]
-#insert_table_queries = [songplay_table_insert,
-#                        user_table_insert,
-#                        song_table_insert,
-#                        artist_table_insert,
-#                        time_table_insert]
+insert_table_list = ['immigration']
